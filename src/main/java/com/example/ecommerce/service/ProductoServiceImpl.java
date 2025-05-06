@@ -63,14 +63,16 @@ public class ProductoServiceImpl implements IproductoService{
         boolean tieneCategoria = categoria != null && !categoria.isBlank();
 
         if (tieneNombre) {
+            logger.info("Buscando productos por nombre: {}", nombre);
             return productoRepository.findByNombreContainingIgnoreCaseAndDeletedFalse(nombre);
         } else if (tieneCategoria) {
+            logger.info("Buscando productos por categoría: {}", categoria);
             return productoRepository.findByCategoriaContainingIgnoreCaseAndDeletedFalse(categoria);
         } else {
-            return productoRepository.findByDeletedFalse(); // devuelve todos
+            logger.info("Sin filtros aplicados. Listando todos los productos no eliminados.");
+            return productoRepository.findByBorradoFalse();
         }
     }
-}
 
 }
 

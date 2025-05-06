@@ -10,13 +10,13 @@ import java.util.Optional;
 @Repository
 public interface IproductoRepository extends JpaRepository<Producto, Long> {
 
-    Optional<Producto> findBySku(String sku);
 
-    //Búsqueda por nombre o categoria
-    List<Producto> findByNombreContainingIgnoreCaseOrCategoriaContainingIgnoreCase(String nombre, String categoria);
 
     //Obtener los productos no eliminados
     List<Producto> findByBorradoFalse();
 
+    List<Producto> findByNombreContainingIgnoreCaseAndDeletedFalse(String nombre);
+
+    List<Producto> findByCategoriaContainingIgnoreCaseAndDeletedFalse(String categoria);
 
 }
