@@ -64,10 +64,10 @@ public class ProductoServiceImpl implements IproductoService{
 
         if (tieneNombre) {
             logger.info("Buscando productos por nombre: {}", nombre);
-            return productoRepository.findByNombreContainingIgnoreCaseAndDeletedFalse(nombre);
+            return productoRepository.findByNombreContainingIgnoreCaseAndBorradoFalse(nombre);
         } else if (tieneCategoria) {
             logger.info("Buscando productos por categoría: {}", categoria);
-            return productoRepository.findByCategoriaContainingIgnoreCaseAndDeletedFalse(categoria);
+            return productoRepository.findByCategoriaContainingIgnoreCaseAndBorradoFalse(categoria);
         } else {
             logger.info("Sin filtros aplicados. Listando todos los productos no eliminados.");
             return productoRepository.findByBorradoFalse();

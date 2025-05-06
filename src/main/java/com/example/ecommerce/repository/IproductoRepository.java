@@ -15,8 +15,8 @@ public interface IproductoRepository extends JpaRepository<Producto, Long> {
     //Obtener los productos no eliminados
     List<Producto> findByBorradoFalse();
 
-    List<Producto> findByNombreContainingIgnoreCaseAndDeletedFalse(String nombre);
+    List<Producto> findByNombreContainingIgnoreCaseAndBorradoFalse(String nombre);
 
-    List<Producto> findByCategoriaContainingIgnoreCaseAndDeletedFalse(String categoria);
+    List<Producto> findByCategoriaContainingIgnoreCaseAndBorradoFalse(String categoria);
 
 }
