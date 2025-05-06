@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Mi Carrito</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-light">
+
+<!-- Mensajes con SweetAlert -->
+<div th:if="${exito}">
+    <script th:inline="javascript">
+        Swal.fire({
+            icon: 'success',
+            title: '¡Compra realizada!',
+            text: [[${exito}]],
+            confirmButtonColor: '#3085d6'
+        });
+    </script>
+</div>
+
+<div th:if="${error}">
+    <script th:inline="javascript">
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: [[${error}]],
+            confirmButtonColor: '#d33'
+        });
+    </script>
+</div>
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-primary text-center"><i class="fas fa-shopping-cart me-2"></i> Mi Carrito</h2>
+
+    <div th:if="${#lists.isEmpty(items)}" class="text-center">
+        <div class="alert alert-info">
+            No tenés productos en el carrito.
+        </div>
+        <a th:href="@{/carrito/agregar-productos(usuarioId=${usuario.id})}" class="btn btn-outline-primary mt-3">
+            <i class="fas fa-plus me-1"></i> Agregar productos al carrito
+        </a>
+    </div>
+
+    <div th:unless="${#lists.isEmpty(items)}">
+        <table class="table table-bordered table-hover align-middle">
+            <thead class="table-dark text-center">
+            <tr>
+                <th>Imagen</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+                <th>Subtotal</th>
+                <th>Acción</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="item : ${items}" class="text-center">
+                <td><img th:src="@{${item.producto.imagenUrl}}" width="60" class="img-thumbnail"/></td>
+                <td th:text="${item.producto.nombre}"></td>
+                <td th:text="${item.cantidad}"></td>
+                <td>$<span th:text="${item.producto.precio}"></span></td>
+                <td>
+                    $<span th:text="${#numbers.formatDecimal(item.cantidad * item.producto.precio, 1, 'COMMA', 2, 'POINT')}"></span>
+                </td>
+                <td>
+                    <a th:href="@{/carrito/eliminar-item(usuarioId=${usuario.id}, productoId=${item.producto.id})}"
+                       class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i> Quitar
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+        <div class="d-flex justify-content-between align-items-center mt-4">
+            <a th:href="@{/carrito/agregar-productos(usuarioId=${usuario.id})}" class="btn btn-outline-primary">
+                <i class="fas fa-plus me-1"></i> Agregar más productos
+            </a>
+
+            <div class="text-end">
+                <h5>Total:
+                    <span class="text-success">
+                        $<span th:text="${#numbers.formatDecimal(totalCarrito, 1, 'COMMA', 2, 'POINT')}"></span>
+                    </span>
+                </h5>
+                <a th:href="@{/carrito/vaciar/{id}(id=${usuario.id})}" class="btn btn-outline-danger mt-2 me-2">
+                    <i class="fas fa-trash-alt me-1"></i> Vaciar carrito
+                </a>
+                <form th:action="@{/carrito/finalizar/{id}(id=${usuario.id})}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-success mt-2">
+                        <i class="fas fa-check-circle me-1"></i> Finalizar compra
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+
