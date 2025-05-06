@@ -26,9 +26,15 @@ public class ProductoController {
 
     // Mostrar listado de productos
     @GetMapping
-    public String listarProductos(Model model) {
-        List<Producto> productos = productoService.listarTodos();
+    public String listarProductos(@RequestParam(required = false) String nombre,
+                                  @RequestParam(required = false) String categoria,
+                                  Model model) {
+
+        List<Producto> productos = productoService.buscarPorNombreOCategoria(nombre, categoria);
+
         model.addAttribute("productos", productos);
+        model.addAttribute("nombre", nombre);
+        model.addAttribute("categoria", categoria);
         return "producto/listado";
     }
 

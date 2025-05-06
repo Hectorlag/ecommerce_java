@@ -5,11 +5,15 @@ import com.example.ecommerce.model.Producto;
 import com.example.ecommerce.repository.IproductoRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 @Service
 public class ProductoServiceImpl implements IproductoService{
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductoServiceImpl.class);
 
     @Autowired
     private IproductoRepository productoRepository;
@@ -54,9 +58,19 @@ public class ProductoServiceImpl implements IproductoService{
     }
 
     @Override
-    public List<Producto> buscarPorNombreOCategoria(String criterio) {
-        return productoRepository.findByNombreContainingIgnoreCaseOrCategoriaContainingIgnoreCase(criterio, criterio);
+    public List<Producto> buscarPorNombreOCategoria(String nombre, String categoria) {
+        boolean tieneNombre = nombre != null && !nombre.isBlank();
+        boolean tieneCategoria = categoria != null && !categoria.isBlank();
+
+        if (tieneNombre) {
+            return productoRepository.findByNombreContainingIgnoreCaseAndDeletedFalse(nombre);
+        } else if (tieneCategoria) {
+            return productoRepository.findByCategoriaContainingIgnoreCaseAndDeletedFalse(categoria);
+        } else {
+            return productoRepository.findByDeletedFalse(); // devuelve todos
+        }
     }
+}
 
 }
 

@@ -16,5 +16,5 @@ public interface IproductoService {
 
     void eliminarLogico(Long id);
 
-    List<Producto> buscarPorNombreOCategoria(String criterio);
+    List<Producto> buscarPorNombreOCategoria(String nombre, String categoria);
 }
