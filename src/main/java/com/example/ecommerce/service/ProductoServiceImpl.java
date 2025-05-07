@@ -120,7 +120,7 @@ public class ProductoServiceImpl implements IproductoService{
 
         return null;
     }
-    
+
     private boolean esImagenValida(MultipartFile archivo) {
         if (archivo == null || archivo.isEmpty()) {
             return false;
