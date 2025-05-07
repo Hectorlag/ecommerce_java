@@ -29,6 +29,12 @@ public class ProductoController {
                                   Model model) {
 
         List<Producto> productos = productoService.buscarPorNombreOCategoria(nombre, categoria);
+
+        // 👇 Imprimí en consola la URL de imagen de cada producto
+        for (Producto producto : productos) {
+            System.out.println("Imagen de producto: " + producto.getImagenUrl());
+        }
+
         model.addAttribute("productos", productos);
         model.addAttribute("nombre", nombre);
         model.addAttribute("categoria", categoria);
