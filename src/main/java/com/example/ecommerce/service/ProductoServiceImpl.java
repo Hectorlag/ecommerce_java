@@ -93,37 +93,38 @@ public class ProductoServiceImpl implements IproductoService{
 
 
     @Override
-    public String guardarImagen(MultipartFile imagenFile) {
-        if (!esImagenValida(imagenFile)) {
-            System.out.println("Archivo inválido: " + imagenFile.getContentType());
+    public String guardarImagen(MultipartFile archivo) {
+        if (archivo == null || !esImagenValida(archivo)) {
             return null;
         }
 
         try {
-            // Asignar extensión según MIME
-            String extension = switch (imagenFile.getContentType()) {
+            // Determinar extensión según tipo MIME
+            String extension = switch (archivo.getContentType()) {
                 case "image/jpeg" -> ".jpg";
                 case "image/png" -> ".png";
                 case "image/webp" -> ".webp";
-                default -> ""; // No debería llegar aquí gracias a la validación previa
+                default -> ""; // No debería pasar por la validación
             };
 
             String nombreUnico = UUID.randomUUID().toString() + extension;
             Path ruta = Paths.get("uploads/img/" + nombreUnico);
             Files.createDirectories(ruta.getParent());
-            Files.write(ruta, imagenFile.getBytes());
+            Files.write(ruta, archivo.getBytes());
 
             return "/img/" + nombreUnico;
 
         } catch (IOException e) {
-            e.printStackTrace(); // Mejor usar logger
+            e.printStackTrace(); // Ideal: usar logger
         }
 
         return null;
     }
-
+    
     private boolean esImagenValida(MultipartFile archivo) {
-        if (archivo.isEmpty()) return false;
+        if (archivo == null || archivo.isEmpty()) {
+            return false;
+        }
 
         List<String> tiposPermitidos = List.of("image/jpeg", "image/png", "image/webp");
         String tipoMime = archivo.getContentType();
