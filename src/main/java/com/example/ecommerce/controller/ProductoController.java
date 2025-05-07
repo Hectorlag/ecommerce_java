@@ -52,21 +52,10 @@ public class ProductoController {
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto,
                                   @RequestParam("imagen") MultipartFile imagenFile) {
-
-        if (!imagenFile.isEmpty()) {
-            try {
-                String nombreArchivo = imagenFile.getOriginalFilename();
-                Path ruta = Paths.get("src/main/resources/static/img/" + nombreArchivo);
-                Files.write(ruta, imagenFile.getBytes());
-                producto.setImagenUrl("/img/" + nombreArchivo);
-            } catch (IOException e) {
-                e.printStackTrace(); // Considerá usar un logger
-            }
-        }
-
-        productoService.crear(producto);
+        productoService.crearProducto(producto, imagenFile);
         return "redirect:/productos";
     }
+
 
     // Formulario para editar producto
     @GetMapping("/editar/{id}")
@@ -76,31 +65,14 @@ public class ProductoController {
         return "producto/formulario";
     }
 
-    // Actualizar producto existente
     @PostMapping("/actualizar/{id}")
     public String actualizarProducto(@PathVariable Long id,
                                      @ModelAttribute Producto productoActualizado,
                                      @RequestParam("imagen") MultipartFile imagenFile) {
-
-        Producto productoExistente = productoService.buscarPorId(id);
-
-        if (!imagenFile.isEmpty()) {
-            try {
-                String nombreArchivo = imagenFile.getOriginalFilename();
-                Path ruta = Paths.get("src/main/resources/static/img/" + nombreArchivo);
-                Files.write(ruta, imagenFile.getBytes());
-                productoActualizado.setImagenUrl("/img/" + nombreArchivo);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } else {
-            productoActualizado.setImagenUrl(productoExistente.getImagenUrl());
-        }
-
-        productoActualizado.setId(id);
-        productoService.editar(id, productoActualizado);
+        productoService.actualizarProducto(id, productoActualizado, imagenFile);
         return "redirect:/productos";
     }
+
 
     // Eliminación lógica
     @GetMapping("/eliminar/{id}")

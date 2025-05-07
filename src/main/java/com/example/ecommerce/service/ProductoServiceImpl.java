@@ -7,8 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ProductoServiceImpl implements IproductoService{
@@ -30,25 +36,36 @@ public class ProductoServiceImpl implements IproductoService{
     }
 
     @Override
-    public Producto crear(Producto producto) {
+    public Producto crearProducto(Producto producto, MultipartFile imagenFile) {
+        String urlImagen = guardarImagen(imagenFile);
+        if (urlImagen != null) {
+            producto.setImagenUrl(urlImagen);
+        }
         return productoRepository.save(producto);
     }
 
     @Override
-    public Producto editar(Long id, Producto productoActualizado) {
+    public Producto actualizarProducto(Long id, Producto productoActualizado, MultipartFile imagenFile) {
         Producto producto = buscarPorId(id);
 
+        // Imagen: si se sube una nueva válida, la usamos; si no, se mantiene la anterior
+        String urlImagen = guardarImagen(imagenFile);
+        if (urlImagen != null) {
+            producto.setImagenUrl(urlImagen);
+        }
+
+        // Actualizar campos
         producto.setNombre(productoActualizado.getNombre());
         producto.setDescripcion(productoActualizado.getDescripcion());
         producto.setPrecio(productoActualizado.getPrecio());
         producto.setStock(productoActualizado.getStock());
         producto.setSku(productoActualizado.getSku());
-        producto.setImagenUrl(productoActualizado.getImagenUrl());
         producto.setCategoria(productoActualizado.getCategoria());
         producto.setFechaElaboracion(productoActualizado.getFechaElaboracion());
 
         return productoRepository.save(producto);
     }
+
 
     @Override
     public void eliminarLogico(Long id) {
@@ -73,6 +90,47 @@ public class ProductoServiceImpl implements IproductoService{
             return productoRepository.findByBorradoFalse();
         }
     }
+
+
+    @Override
+    public String guardarImagen(MultipartFile imagenFile) {
+        if (!esImagenValida(imagenFile)) {
+            System.out.println("Archivo inválido: " + imagenFile.getContentType());
+            return null;
+        }
+
+        try {
+            // Asignar extensión según MIME
+            String extension = switch (imagenFile.getContentType()) {
+                case "image/jpeg" -> ".jpg";
+                case "image/png" -> ".png";
+                case "image/webp" -> ".webp";
+                default -> ""; // No debería llegar aquí gracias a la validación previa
+            };
+
+            String nombreUnico = UUID.randomUUID().toString() + extension;
+            Path ruta = Paths.get("uploads/img/" + nombreUnico);
+            Files.createDirectories(ruta.getParent());
+            Files.write(ruta, imagenFile.getBytes());
+
+            return "/img/" + nombreUnico;
+
+        } catch (IOException e) {
+            e.printStackTrace(); // Mejor usar logger
+        }
+
+        return null;
+    }
+
+    private boolean esImagenValida(MultipartFile archivo) {
+        if (archivo.isEmpty()) return false;
+
+        List<String> tiposPermitidos = List.of("image/jpeg", "image/png", "image/webp");
+        String tipoMime = archivo.getContentType();
+
+        return tipoMime != null && tiposPermitidos.contains(tipoMime);
+    }
+
 
 }
 
