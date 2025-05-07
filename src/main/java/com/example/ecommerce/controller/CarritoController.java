@@ -1,5 +1,6 @@
 package com.example.ecommerce.controller;
 
+
 import com.example.ecommerce.exception.BadRequestException;
 import com.example.ecommerce.model.Carrito;
 import com.example.ecommerce.model.ItemCarrito;
@@ -25,10 +26,10 @@ public class CarritoController {
     private IcarritoService carritoService;
 
     @Autowired
-    private ItemCarritoService itemCarritoService;
+    private IproductoService productoService;
 
     @Autowired
-    private IproductoService productoService;
+    private ItemCarritoService itemCarritoService;
 
     @Autowired
     private IusuarioService usuarioService;
@@ -40,18 +41,17 @@ public class CarritoController {
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
         List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
 
-        double totalCarrito = calcularTotal(items); // ✅ NUEVO
+        double totalCarrito = calcularTotal(items);
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
         model.addAttribute("items", items);
-        model.addAttribute("totalCarrito", totalCarrito); // ✅ NUEVO
+        model.addAttribute("totalCarrito", totalCarrito);
 
         return "carrito/ver";
     }
 
-
-    // Agregar producto al carrito
+    // Mostrar productos para agregar al carrito
     @GetMapping("/agregar-productos")
     public String mostrarProductosParaAgregarAlCarrito(@RequestParam Long usuarioId, Model model) {
         List<Producto> productos = productoService.listarTodos();
@@ -60,6 +60,7 @@ public class CarritoController {
         return "producto/listado-carrito";
     }
 
+    // Agregar producto al carrito (esta lógica sigue en el service de items)
     @PostMapping("/agregar")
     public String agregarAlCarrito(@RequestParam Long usuarioId,
                                    @RequestParam Long productoId,
@@ -80,73 +81,37 @@ public class CarritoController {
         return "redirect:/carrito/" + usuarioId;
     }
 
-
-    // Vaciar el carrito
+    // Vaciar carrito
     @GetMapping("/vaciar/{usuarioId}")
     public String vaciarCarrito(@PathVariable Long usuarioId) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
-        Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-
-        itemCarritoService.vaciarCarrito(carrito);
-
+        carritoService.vaciarCarritoDeUsuario(usuarioId);
         return "redirect:/carrito/" + usuarioId;
     }
 
-    // Eliminar un solo producto del carrito
+    // Eliminar producto del carrito
     @GetMapping("/eliminar-item")
     public String eliminarItemDelCarrito(@RequestParam Long usuarioId,
                                          @RequestParam Long productoId) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
-        Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-        Producto producto = productoService.buscarPorId(productoId);
-
-        itemCarritoService.eliminarProductoDelCarrito(carrito, producto);
-
+        carritoService.eliminarItemDelCarrito(usuarioId, productoId);
         return "redirect:/carrito/" + usuarioId;
     }
 
+    // Finalizar compra
     @PostMapping("/finalizar/{usuarioId}")
     public String finalizarCompra(@PathVariable Long usuarioId, RedirectAttributes redirectAttributes) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
-        Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-        List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
-
-        if (items.isEmpty()) {
-            redirectAttributes.addFlashAttribute("error", "Tu carrito está vacío.");
-            return "redirect:/carrito/" + usuarioId;
+        try {
+            carritoService.finalizarCompra(usuarioId);
+            redirectAttributes.addFlashAttribute("exito", "¡Compra realizada con éxito!");
+        } catch (IllegalStateException e) {
+            redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
 
-        for (ItemCarrito item : items) {
-            Producto producto = item.getProducto();
-            if (producto.getStock() < item.getCantidad()) {
-                redirectAttributes.addFlashAttribute("error", "Stock insuficiente para el producto: " + producto.getNombre());
-                return "redirect:/carrito/" + usuarioId;
-            }
-        }
-
-        // Actualizar stock
-        for (ItemCarrito item : items) {
-            Producto producto = item.getProducto();
-            producto.setStock(producto.getStock() - item.getCantidad());
-            productoService.editar(producto.getId(), producto);
-        }
-
-        // Vaciar carrito
-        itemCarritoService.vaciarCarrito(carrito);
-
-        redirectAttributes.addFlashAttribute("exito", "¡Compra realizada con éxito!");
         return "redirect:/carrito/" + usuarioId;
     }
-
 
     private double calcularTotal(List<ItemCarrito> items) {
         return items.stream()
                 .mapToDouble(item -> item.getCantidad() * item.getProducto().getPrecio())
                 .sum();
     }
-
-
-
-
 }
-

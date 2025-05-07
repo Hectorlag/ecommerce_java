@@ -8,4 +8,12 @@ public interface IcarritoService {
     Carrito crearCarritoParaUsuario(Usuario usuario);
 
     Carrito obtenerCarritoPorUsuario(Usuario usuario);
+
+    void finalizarCompra(Long usuarioId);
+
+    void vaciarCarritoDeUsuario(Long usuarioId);
+
+    void eliminarItemDelCarrito(Long usuarioId, Long productoId);
+
+
 }
