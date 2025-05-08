@@ -11,6 +11,7 @@ import com.example.ecommerce.service.IproductoService;
 import com.example.ecommerce.service.ItemCarritoService;
 import com.example.ecommerce.service.IusuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -34,12 +35,11 @@ public class CarritoController {
     @Autowired
     private IusuarioService usuarioService;
 
-    // Ver el carrito de un usuario
-    @GetMapping("/{usuarioId}")
-    public String verCarrito(@PathVariable Long usuarioId, Model model) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+    // Ver el carrito del usuario logueado
+    @GetMapping
+    public String verCarrito(Model model, Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-        System.out.println("🛒 Mostrando carrito ID " + carrito.getId() + " para usuario ID " + usuario.getId());
         List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
 
         double totalCarrito = calcularTotal(items);
@@ -54,62 +54,69 @@ public class CarritoController {
 
     // Mostrar productos para agregar al carrito
     @GetMapping("/agregar-productos")
-    public String mostrarProductosParaAgregarAlCarrito(@RequestParam Long usuarioId, Model model) {
+    public String mostrarProductosParaAgregarAlCarrito(Model model, Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
         List<Producto> productos = productoService.listarTodos();
         model.addAttribute("productos", productos);
-        model.addAttribute("usuarioId", usuarioId);
+        model.addAttribute("usuarioId", usuario.getId());
         return "producto/listado-carrito";
     }
 
-    // Agregar producto al carrito (esta lógica sigue en el service de items)
+    // Agregar producto al carrito
     @PostMapping("/agregar")
-    public String agregarAlCarrito(@RequestParam Long usuarioId,
-                                   @RequestParam Long productoId,
+    public String agregarAlCarrito(@RequestParam Long productoId,
                                    @RequestParam int cantidad,
-                                   RedirectAttributes redirectAttributes) {
-        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+                                   RedirectAttributes redirectAttributes,
+                                   Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
         Producto producto = productoService.buscarPorId(productoId);
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-
-        System.out.println("➕ Agregando al carrito ID " + carrito.getId() + " del usuario ID " + usuario.getId());
 
         try {
             itemCarritoService.agregarProductoAlCarrito(carrito, producto, cantidad);
             redirectAttributes.addFlashAttribute("success", "Se agregó correctamente el producto: " + producto.getNombre());
         } catch (BadRequestException e) {
             redirectAttributes.addFlashAttribute("errorStock", e.getMessage());
-            return "redirect:/carrito/agregar-productos?usuarioId=" + usuarioId;
+            return "redirect:/carrito/agregar-productos";
         }
 
-        return "redirect:/carrito/" + usuarioId;
+        return "redirect:/carrito";
     }
 
     // Vaciar carrito
-    @GetMapping("/vaciar/{usuarioId}")
-    public String vaciarCarrito(@PathVariable Long usuarioId) {
-        carritoService.vaciarCarritoDeUsuario(usuarioId);
-        return "redirect:/carrito/" + usuarioId;
+    @GetMapping("/vaciar")
+    public String vaciarCarrito(Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
+        carritoService.vaciarCarritoDeUsuario(usuario.getId());
+        return "redirect:/carrito";
     }
 
     // Eliminar producto del carrito
     @GetMapping("/eliminar-item")
-    public String eliminarItemDelCarrito(@RequestParam Long usuarioId,
-                                         @RequestParam Long productoId) {
-        carritoService.eliminarItemDelCarrito(usuarioId, productoId);
-        return "redirect:/carrito/" + usuarioId;
+    public String eliminarItemDelCarrito(@RequestParam Long productoId,
+                                         Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
+        carritoService.eliminarItemDelCarrito(usuario.getId(), productoId);
+        return "redirect:/carrito";
     }
 
     // Finalizar compra
-    @PostMapping("/finalizar/{usuarioId}")
-    public String finalizarCompra(@PathVariable Long usuarioId, RedirectAttributes redirectAttributes) {
+    @PostMapping("/finalizar")
+    public String finalizarCompra(RedirectAttributes redirectAttributes, Authentication authentication) {
+        Usuario usuario = getUsuarioAutenticado(authentication);
         try {
-            carritoService.finalizarCompra(usuarioId);
+            carritoService.finalizarCompra(usuario.getId());
             redirectAttributes.addFlashAttribute("exito", "¡Compra realizada con éxito!");
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
         }
+        return "redirect:/carrito";
+    }
 
-        return "redirect:/carrito/" + usuarioId;
+    private Usuario getUsuarioAutenticado(Authentication authentication) {
+        String username = authentication.getName();
+        return usuarioService.buscarPorNombre(username)
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado en sesión"));
     }
 
     private double calcularTotal(List<ItemCarrito> items) {

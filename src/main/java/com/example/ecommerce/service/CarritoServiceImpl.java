@@ -31,8 +31,7 @@ public class CarritoServiceImpl implements IcarritoService {
 
     @Override
     public Carrito crearCarritoParaUsuario(Usuario usuario) {
-        // Verifica si ya existe un carrito para ese usuario
-        return carritoRepository.findByUsuario(usuario)
+        return carritoRepository.findByUsuarioId(usuario.getId())
                 .orElseGet(() -> {
                     Carrito nuevoCarrito = new Carrito();
                     nuevoCarrito.setUsuario(usuario);
@@ -42,14 +41,8 @@ public class CarritoServiceImpl implements IcarritoService {
 
     @Override
     public Carrito obtenerCarritoPorUsuario(Usuario usuario) {
-        return carritoRepository.findByUsuario(usuario)
-                .orElseGet(() -> {
-                    Carrito nuevoCarrito = new Carrito();
-                    nuevoCarrito.setUsuario(usuario);
-                    Carrito guardado = carritoRepository.save(nuevoCarrito);
-                    System.out.println("🛒 Nuevo carrito creado ID: " + guardado.getId() + " para usuario: " + usuario.getNombre());
-                    return guardado;
-                });
+        return carritoRepository.findByUsuarioId(usuario.getId())
+                .orElseGet(() -> crearCarritoParaUsuario(usuario));
     }
 
 
