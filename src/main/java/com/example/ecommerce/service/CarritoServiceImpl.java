@@ -6,6 +6,7 @@ import com.example.ecommerce.model.ItemCarrito;
 import com.example.ecommerce.model.Producto;
 import com.example.ecommerce.model.Usuario;
 import com.example.ecommerce.repository.IcarritoRepository;
+import org.hibernate.validator.internal.util.stereotypes.Lazy;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +26,7 @@ public class CarritoServiceImpl implements IcarritoService {
     private IproductoService productoService;
 
     @Autowired
+    @Lazy
     private IusuarioService usuarioService;
 
     @Override
@@ -41,8 +43,15 @@ public class CarritoServiceImpl implements IcarritoService {
     @Override
     public Carrito obtenerCarritoPorUsuario(Usuario usuario) {
         return carritoRepository.findByUsuario(usuario)
-                .orElseGet(() -> crearCarritoParaUsuario(usuario));
+                .orElseGet(() -> {
+                    Carrito nuevoCarrito = new Carrito();
+                    nuevoCarrito.setUsuario(usuario);
+                    Carrito guardado = carritoRepository.save(nuevoCarrito);
+                    System.out.println("🛒 Nuevo carrito creado ID: " + guardado.getId() + " para usuario: " + usuario.getNombre());
+                    return guardado;
+                });
     }
+
 
     @Override
     public void finalizarCompra(Long usuarioId) {

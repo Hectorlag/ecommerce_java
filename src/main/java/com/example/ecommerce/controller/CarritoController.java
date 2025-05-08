@@ -39,6 +39,7 @@ public class CarritoController {
     public String verCarrito(@PathVariable Long usuarioId, Model model) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
+        System.out.println("🛒 Mostrando carrito ID " + carrito.getId() + " para usuario ID " + usuario.getId());
         List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
 
         double totalCarrito = calcularTotal(items);
@@ -69,6 +70,8 @@ public class CarritoController {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         Producto producto = productoService.buscarPorId(productoId);
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
+
+        System.out.println("➕ Agregando al carrito ID " + carrito.getId() + " del usuario ID " + usuario.getId());
 
         try {
             itemCarritoService.agregarProductoAlCarrito(carrito, producto, cantidad);

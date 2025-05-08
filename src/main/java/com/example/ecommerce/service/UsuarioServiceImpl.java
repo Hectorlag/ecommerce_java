@@ -18,10 +18,6 @@ public class UsuarioServiceImpl implements IusuarioService{
     private IusuarioRepository usuarioRepository;
 
     @Autowired
-    @Lazy
-    private IcarritoService carritoService;
-
-    @Autowired
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -29,13 +25,9 @@ public class UsuarioServiceImpl implements IusuarioService{
         usuario.setPassword(passwordEncoder.encode(usuario.getPassword()));
         Usuario guardado = usuarioRepository.save(usuario);
 
-        // Crear el carrito después de guardar el usuario
-        carritoService.crearCarritoParaUsuario(guardado);
-
-        System.out.println("✅ Usuario registrado con carrito: " + guardado.getNombre());
+        System.out.println("✅ Usuario registrado: " + guardado.getNombre());
         return guardado;
     }
-
 
     @Override
         public Usuario buscarPorId(Long id) {
