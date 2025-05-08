@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+
 @Service
 public class CarritoServiceImpl implements IcarritoService {
 
@@ -28,9 +29,13 @@ public class CarritoServiceImpl implements IcarritoService {
 
     @Override
     public Carrito crearCarritoParaUsuario(Usuario usuario) {
-        Carrito carrito = new Carrito();
-        carrito.setUsuario(usuario);
-        return carritoRepository.save(carrito);
+        // Verifica si ya existe un carrito para ese usuario
+        return carritoRepository.findByUsuario(usuario)
+                .orElseGet(() -> {
+                    Carrito nuevoCarrito = new Carrito();
+                    nuevoCarrito.setUsuario(usuario);
+                    return carritoRepository.save(nuevoCarrito);
+                });
     }
 
     @Override
@@ -78,5 +83,4 @@ public class CarritoServiceImpl implements IcarritoService {
         itemCarritoService.eliminarProductoDelCarrito(carrito, producto);
     }
 }
-
 

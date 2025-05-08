@@ -37,6 +37,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+<!-- Mensaje de éxito al registrarse -->
 <div th:if="${registroExitoso}">
     <script th:inline="javascript">
         Swal.fire({
@@ -47,5 +48,30 @@
         });
     </script>
 </div>
+
+<!-- Mensaje de error al iniciar sesión -->
+<div th:if="${error}">
+    <script th:inline="javascript">
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de autenticación',
+            text: [[${error}]],
+            confirmButtonColor: '#d33'
+        });
+    </script>
+</div>
+
+<!-- Mensaje al cerrar sesión -->
+<div th:if="${mensaje}">
+    <script th:inline="javascript">
+        Swal.fire({
+            icon: 'info',
+            title: 'Sesión finalizada',
+            text: [[${mensaje}]],
+            confirmButtonColor: '#3085d6'
+        });
+    </script>
+</div>
+
 
 </html>
