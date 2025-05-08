@@ -21,7 +21,7 @@ public class Carrito {
     private Long id;
 
     @OneToOne
-    @JoinColumn(name = "usuario_id", nullable = false, unique = true)s
+    @JoinColumn(name = "usuario_id", nullable = false, unique = true)
     private Usuario usuario;
 
     @OneToMany(mappedBy = "carrito", cascade = CascadeType.ALL, orphanRemoval = true)
