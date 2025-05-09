@@ -33,30 +33,31 @@
             <div th:if="${error}" class="alert alert-danger text-center" th:text="${error}"></div>
 
             <div class="d-grid">
-                <button type="submit" class="btn btn-primary"><i class="fas fa-user-plus me-1"></i> Registrarse</button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-1"></i> Registrarse
+                </button>
             </div>
         </form>
 
         <div class="text-center mt-3">
-            <a th:href="@{/login}"><i class="fas fa-arrow-left me-1"></i>Volver al inicio</a>
+            <a th:href="@{/login}">
+                <i class="fas fa-arrow-left me-1"></i> Volver al inicio
+            </a>
         </div>
     </div>
 </div>
 
-</body>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<div th:if="${error}">
-    <script th:inline="javascript">
-        Swal.fire({
-            icon: 'error',
-            title: 'Error',
-            text: [[${error}]],
-            confirmButtonColor: '#d33'
-        });
-    </script>
-</div>
+<!-- Mostrar error con SweetAlert solo si hay error -->
+<script th:if="${error}" th:inline="javascript">
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: [[${error}]],
+        confirmButtonColor: '#d33'
+    });
+</script>
 
+</body>
 </html>
-
-

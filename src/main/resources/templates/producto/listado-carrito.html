@@ -31,7 +31,7 @@
                     <p class="card-text mb-2">Stock disponible: <span th:text="${producto.stock}"></span></p>
 
                     <form th:action="@{/carrito/agregar}" method="post" class="mt-auto">
-                        <input type="hidden" name="usuarioId" th:value="${usuarioId}" />
+                        <!-- usuarioId ya no es necesario -->
                         <input type="hidden" name="productoId" th:value="${producto.id}" />
 
                         <div class="input-group">
@@ -47,7 +47,8 @@
     </div>
 
     <div class="text-center mt-5">
-        <a th:href="@{/carrito/{id}(id=${usuarioId})}" class="btn btn-secondary">
+        <!-- Redirige simplemente a /carrito -->
+        <a th:href="@{/carrito}" class="btn btn-secondary">
             <i class="fas fa-arrow-left me-1"></i> Volver al carrito
         </a>
     </div>

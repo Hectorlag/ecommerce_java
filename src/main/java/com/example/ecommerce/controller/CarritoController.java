@@ -1,6 +1,5 @@
 package com.example.ecommerce.controller;
 
-
 import com.example.ecommerce.exception.BadRequestException;
 import com.example.ecommerce.model.Carrito;
 import com.example.ecommerce.model.ItemCarrito;
@@ -18,10 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Controller
 @RequestMapping("/carrito")
 public class CarritoController {
+
+    private static final Logger logger = LoggerFactory.getLogger(CarritoController.class);
 
     @Autowired
     private IcarritoService carritoService;
@@ -43,6 +46,8 @@ public class CarritoController {
         List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
 
         double totalCarrito = calcularTotal(items);
+
+        logger.info("🛒 Mostrando carrito ID {} para usuario ID {}", carrito.getId(), usuario.getId());
 
         model.addAttribute("usuario", usuario);
         model.addAttribute("carrito", carrito);
@@ -74,8 +79,10 @@ public class CarritoController {
 
         try {
             itemCarritoService.agregarProductoAlCarrito(carrito, producto, cantidad);
+            logger.info("✅ Producto '{}' agregado al carrito ID {} del usuario ID {}", producto.getNombre(), carrito.getId(), usuario.getId());
             redirectAttributes.addFlashAttribute("success", "Se agregó correctamente el producto: " + producto.getNombre());
         } catch (BadRequestException e) {
+            logger.warn("⚠️ No se pudo agregar producto al carrito: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorStock", e.getMessage());
             return "redirect:/carrito/agregar-productos";
         }
@@ -88,6 +95,7 @@ public class CarritoController {
     public String vaciarCarrito(Authentication authentication) {
         Usuario usuario = getUsuarioAutenticado(authentication);
         carritoService.vaciarCarritoDeUsuario(usuario.getId());
+        logger.info("🧹 Carrito del usuario ID {} vaciado.", usuario.getId());
         return "redirect:/carrito";
     }
 
@@ -97,6 +105,7 @@ public class CarritoController {
                                          Authentication authentication) {
         Usuario usuario = getUsuarioAutenticado(authentication);
         carritoService.eliminarItemDelCarrito(usuario.getId(), productoId);
+        logger.info("❌ Producto ID {} eliminado del carrito del usuario ID {}", productoId, usuario.getId());
         return "redirect:/carrito";
     }
 
@@ -107,8 +116,10 @@ public class CarritoController {
         try {
             carritoService.finalizarCompra(usuario.getId());
             redirectAttributes.addFlashAttribute("exito", "¡Compra realizada con éxito!");
+            logger.info("💰 Compra finalizada por el usuario ID {}", usuario.getId());
         } catch (IllegalStateException e) {
             redirectAttributes.addFlashAttribute("error", e.getMessage());
+            logger.warn("❌ Error al finalizar compra: {}", e.getMessage());
         }
         return "redirect:/carrito";
     }

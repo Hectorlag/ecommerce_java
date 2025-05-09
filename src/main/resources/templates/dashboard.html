@@ -45,8 +45,8 @@
                         <p class="text-muted" th:text="${cantidadItemsCarrito} + ' ítems en el carrito'">0 ítems en el carrito</p>
                     </div>
                 </div>
-                <a href="/carrito/1" class="btn btn-success mt-3 w-100">
-                    <i class="fas fa-eye me-1"></i> Ver carrito
+                <a th:href="@{/carrito}" class="btn btn-success mt-3 w-100">
+                    <i class="fas fa-shopping-cart me-1"></i> Ver carrito
                 </a>
             </div>
         </div>
@@ -55,4 +55,3 @@
 
 </body>
 </html>
-
