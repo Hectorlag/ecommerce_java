@@ -8,6 +8,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,11 +49,13 @@ public class ProductoController {
         return "producto/formulario";
     }
 
-    // Guardar nuevo producto
+    //guardar producto nuevo
     @PostMapping("/guardar")
     public String guardarProducto(@ModelAttribute Producto producto,
-                                  @RequestParam("imagen") MultipartFile imagenFile) {
+                                  @RequestParam("imagen") MultipartFile imagenFile,
+                                  RedirectAttributes redirectAttributes) {
         productoService.crearProducto(producto, imagenFile);
+        redirectAttributes.addFlashAttribute("exito", "Producto guardado exitosamente");
         return "redirect:/productos";
     }
 
@@ -65,13 +68,17 @@ public class ProductoController {
         return "producto/formulario";
     }
 
+    //Editar producto
     @PostMapping("/actualizar/{id}")
     public String actualizarProducto(@PathVariable Long id,
                                      @ModelAttribute Producto productoActualizado,
-                                     @RequestParam("imagen") MultipartFile imagenFile) {
+                                     @RequestParam("imagen") MultipartFile imagenFile,
+                                     RedirectAttributes redirectAttributes) {
         productoService.actualizarProducto(id, productoActualizado, imagenFile);
+        redirectAttributes.addFlashAttribute("exito", "Producto actualizado correctamente");
         return "redirect:/productos";
     }
+
 
 
     // Eliminación lógica
