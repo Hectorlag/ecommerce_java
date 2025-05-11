@@ -72,5 +72,18 @@
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script th:src="@{/js/funciones.js}"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<div th:if="${exito}">
+    <script th:inline="javascript">
+        Swal.fire({
+            icon: 'success',
+            title: '¡Éxito!',
+            text: [[${exito}]],
+            confirmButtonColor: '#198754'
+        });
+    </script>
+</div>
+
 </body>
 </html>
