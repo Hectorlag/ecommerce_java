@@ -33,19 +33,15 @@ public class CarritoController {
     private IproductoService productoService;
 
     @Autowired
-    private ItemCarritoService itemCarritoService;
-
-    @Autowired
     private IusuarioService usuarioService;
 
     // Ver el carrito del usuario logueado
     @GetMapping
     public String verCarrito(Model model, Authentication authentication) {
         Usuario usuario = getUsuarioAutenticado(authentication);
+        List<ItemCarrito> items = carritoService.obtenerItemsDelUsuario(usuario.getId());
+        double totalCarrito = carritoService.calcularTotal(usuario.getId());
         Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
-        List<ItemCarrito> items = itemCarritoService.listarItemsPorCarrito(carrito);
-
-        double totalCarrito = calcularTotal(items);
 
         logger.info("🛒 Mostrando carrito ID {} para usuario ID {}", carrito.getId(), usuario.getId());
 
@@ -61,8 +57,7 @@ public class CarritoController {
     @GetMapping("/agregar-productos")
     public String mostrarProductosParaAgregarAlCarrito(Model model, Authentication authentication) {
         Usuario usuario = getUsuarioAutenticado(authentication);
-        List<Producto> productos = productoService.listarTodos();
-        model.addAttribute("productos", productos);
+        model.addAttribute("productos", productoService.listarTodos());
         model.addAttribute("usuarioId", usuario.getId());
         return "producto/listado-carrito";
     }
@@ -74,13 +69,11 @@ public class CarritoController {
                                    RedirectAttributes redirectAttributes,
                                    Authentication authentication) {
         Usuario usuario = getUsuarioAutenticado(authentication);
-        Producto producto = productoService.buscarPorId(productoId);
-        Carrito carrito = carritoService.obtenerCarritoPorUsuario(usuario);
 
         try {
-            itemCarritoService.agregarProductoAlCarrito(carrito, producto, cantidad);
-            logger.info("✅ Producto '{}' agregado al carrito ID {} del usuario ID {}", producto.getNombre(), carrito.getId(), usuario.getId());
-            redirectAttributes.addFlashAttribute("success", "Se agregó correctamente el producto: " + producto.getNombre());
+            carritoService.agregarProductoAlCarrito(usuario.getId(), productoId, cantidad);
+            logger.info("✅ Producto ID {} agregado al carrito del usuario ID {}", productoId, usuario.getId());
+            redirectAttributes.addFlashAttribute("success", "Producto agregado correctamente");
         } catch (BadRequestException e) {
             logger.warn("⚠️ No se pudo agregar producto al carrito: {}", e.getMessage());
             redirectAttributes.addFlashAttribute("errorStock", e.getMessage());
@@ -129,10 +122,11 @@ public class CarritoController {
         return usuarioService.buscarPorNombre(username)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado en sesión"));
     }
-
-    private double calcularTotal(List<ItemCarrito> items) {
-        return items.stream()
-                .mapToDouble(item -> item.getCantidad() * item.getProducto().getPrecio())
-                .sum();
-    }
 }
+
+
+
+
+
+
+

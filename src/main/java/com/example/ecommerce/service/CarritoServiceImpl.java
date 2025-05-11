@@ -45,7 +45,6 @@ public class CarritoServiceImpl implements IcarritoService {
                 .orElseGet(() -> crearCarritoParaUsuario(usuario));
     }
 
-
     @Override
     public void finalizarCompra(Long usuarioId) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
@@ -72,17 +71,41 @@ public class CarritoServiceImpl implements IcarritoService {
         itemCarritoService.vaciarCarrito(carrito);
     }
 
+    @Override
     public void vaciarCarritoDeUsuario(Long usuarioId) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         Carrito carrito = obtenerCarritoPorUsuario(usuario);
         itemCarritoService.vaciarCarrito(carrito);
     }
 
+    @Override
     public void eliminarItemDelCarrito(Long usuarioId, Long productoId) {
         Usuario usuario = usuarioService.buscarPorId(usuarioId);
         Carrito carrito = obtenerCarritoPorUsuario(usuario);
         Producto producto = productoService.buscarPorId(productoId);
         itemCarritoService.eliminarProductoDelCarrito(carrito, producto);
     }
-}
 
+    @Override
+    public void agregarProductoAlCarrito(Long usuarioId, Long productoId, int cantidad) {
+        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+        Carrito carrito = obtenerCarritoPorUsuario(usuario);
+        Producto producto = productoService.buscarPorId(productoId);
+        itemCarritoService.agregarProductoAlCarrito(carrito, producto, cantidad);
+    }
+
+    @Override
+    public List<ItemCarrito> obtenerItemsDelUsuario(Long usuarioId) {
+        Usuario usuario = usuarioService.buscarPorId(usuarioId);
+        Carrito carrito = obtenerCarritoPorUsuario(usuario);
+        return itemCarritoService.listarItemsPorCarrito(carrito);
+    }
+
+    @Override
+    public double calcularTotal(Long usuarioId) {
+        List<ItemCarrito> items = obtenerItemsDelUsuario(usuarioId);
+        return items.stream()
+                .mapToDouble(item -> item.getCantidad() * item.getProducto().getPrecio())
+                .sum();
+    }
+}
